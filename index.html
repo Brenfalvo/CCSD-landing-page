@@ -1,58 +1,1059 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCSD — Cryptography & Distributed Systems Laboratory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-{% block content %}
-<!-- Hero section -->
-<section class="hero">
-  <div class="hero-inner">
-    <h1 class="hero-title">{{ config.extra.blog_name }}</h1>
-    <p class="hero-tagline">{{ config.extra.blog_tagline }}</p>
+  <style>
+    /* ── RESET ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── TOKENS ────────────────────────────────────────────── */
+    :root {
+      /* palette — warm, editorial */
+      --cream:      #f0ede4;
+      --cream-2:    #e8e4d9;
+      --cream-3:    #ddd9ce;
+      --ink:        #141413;
+      --ink-2:      #3d3c39;
+      --ink-3:      #7a7872;
+      --green:      #4a6827;   /* olive primary */
+      --green-2:    #6b8c3e;   /* moss lighter */
+      --border:     rgba(20,20,19,.10);
+      --border-2:   rgba(20,20,19,.18);
+
+      /* type */
+      --serif: 'Newsreader', 'Georgia', serif;
+      --sans:  'Inter', system-ui, sans-serif;
+
+      /* misc */
+      --r:   4px;
+      --r-l: 8px;
+    }
+
+    html  { scroll-behavior: smooth; }
+    body  {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── UTILS ──────────────────────────────────────────────── */
+    .container { max-width: 1080px; margin: 0 auto; }
+
+    .eyebrow {
+      font-family: var(--sans);
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      font-weight: 500;
+      margin-bottom: .75rem;
+    }
+    .eyebrow.accent { color: var(--green); }
+
+    .display {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 300;
+      letter-spacing: -.02em;
+      line-height: 1.12;
+      margin-bottom: 1rem;
+    }
+    .display em { font-style: italic; color: var(--ink-2); }
+
+    .body-text {
+      color: var(--ink-2);
+      font-size: .95rem;
+      line-height: 1.78;
+    }
+
+    .divider { height: 1px; background: var(--border); }
+
+    /* pill / chip */
+    .chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border: 1px solid var(--border-2);
+      border-radius: 2px;
+      font-size: 11px;
+      letter-spacing: .04em;
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+    .chip.green { border-color: var(--green); color: var(--green); }
+
+    /* buttons */
+    .btn {
+      display: inline-block;
+      padding: 11px 22px;
+      border-radius: var(--r);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity .18s, transform .18s;
+    }
+    .btn-fill {
+      background: var(--green);
+      color: #fff;
+    }
+    .btn-fill:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-outline {
+      border: 1px solid var(--border-2);
+      color: var(--ink);
+    }
+    .btn-outline:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* section wrapper */
+    .section { padding: 96px 2.5rem; }
+
+    /* row with label + "see all" */
+    .row-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2.75rem;
+    }
+    .see-all {
+      font-size: 13px;
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity .18s;
+    }
+    .see-all:hover { opacity: .7; }
+
+    /* ── NAV ─────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 62px;
+      padding: 0 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(240,237,228,.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow .3s;
+    }
+    nav.scrolled { box-shadow: 0 2px 20px rgba(20,20,19,.07); }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 11px;
+      text-decoration: none; color: var(--ink);
+    }
+    .nav-mark {
+      width: 28px; height: 28px;
+      border-radius: var(--r);
+      background: var(--ink);
+      display: grid; place-items: center;
+      color: var(--cream);
+      font-family: var(--serif); font-size: 14px; font-weight: 400;
+      font-style: italic;
+    }
+    .nav-name {
+      font-family: var(--sans);
+      font-weight: 600; font-size: 14px;
+      letter-spacing: -.01em;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex; align-items: center; gap: 2rem;
+    }
+    .nav-links a {
+      color: var(--ink-2); text-decoration: none;
+      font-size: 13.5px; font-weight: 400;
+      transition: color .18s;
+    }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links .cta {
+      padding: 7px 16px;
+      border: 1px solid var(--border-2);
+      border-radius: var(--r);
+      color: var(--ink) !important;
+      font-weight: 500 !important;
+      transition: background .18s, border-color .18s !important;
+    }
+    .nav-links .cta:hover {
+      background: var(--ink);
+      color: var(--cream) !important;
+      border-color: var(--ink);
+    }
+
+    /* ── HERO ─────────────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 120px 2.5rem 100px;
+      text-align: center;
+      background: var(--cream);
+      overflow: hidden;
+    }
+
+    /* subtle warm radial glow behind text */
+    #hero::before {
+      content: '';
+      position: absolute;
+      width: 800px; height: 600px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -55%);
+      background: radial-gradient(ellipse at center, rgba(74,104,39,.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #hero-canvas {
+      position: absolute; inset: 0;
+      opacity: .18; pointer-events: none;
+    }
+
+    .hero-label {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 9px;
+      font-size: 11.5px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      font-weight: 500;
+      margin-bottom: 2.25rem;
+    }
+    .hero-label::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity:1; }
+      50%       { opacity:.25; }
+    }
+
+    .hero-h {
+      position: relative;
+      font-family: var(--serif);
+      font-size: clamp(3.2rem, 8vw, 6.8rem);
+      font-weight: 300;
+      letter-spacing: -.03em;
+      line-height: 1.0;
+      max-width: 900px;
+      margin-bottom: 1.75rem;
+    }
+    .hero-h em {
+      font-style: italic;
+      color: var(--green);
+    }
+
+    .hero-sub {
+      position: relative;
+      font-size: 1.05rem;
+      color: var(--ink-2);
+      max-width: 500px;
+      line-height: 1.82;
+      margin-bottom: 2.75rem;
+      font-weight: 300;
+    }
+
+    .hero-btns {
+      position: relative;
+      display: flex; gap: .9rem; flex-wrap: wrap;
+      align-items: center; justify-content: center;
+      margin-bottom: 5rem;
+    }
+
+    .hero-stats {
+      position: relative;
+      display: flex; gap: 4rem;
+      border-top: 1px solid var(--border);
+      padding-top: 2.5rem;
+    }
+    .stat { text-align: left; }
+    .stat-num {
+      font-family: var(--serif);
+      font-size: 2.4rem;
+      font-weight: 300;
+      letter-spacing: -.04em;
+      line-height: 1;
+      display: block;
+    }
+    .stat-lbl {
+      font-size: 11.5px;
+      color: var(--ink-3);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    /* ── ABOUT ─────────────────────────────────────────────── */
+    #about {
+      background: var(--cream-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 5fr 4fr;
+      gap: 6rem; align-items: start;
+    }
+    .about-text .display { margin-bottom: 1.5rem; }
+    .about-text p {
+      color: var(--ink-2);
+      font-size: .97rem;
+      line-height: 1.82;
+      margin-bottom: 1.1rem;
+      font-weight: 300;
+    }
+    .about-text p:last-of-type { margin-bottom: 1.75rem; }
+
+    /* right column: code block aesthetic */
+    .about-code {
+      position: sticky; top: 80px;
+      background: var(--ink);
+      border-radius: var(--r-l);
+      padding: 2rem 2.2rem;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.95;
+      color: rgba(240,237,228,.55);
+      overflow: hidden;
+    }
+    .about-code::before {
+      content: '● ● ●';
+      display: block;
+      font-size: 10px;
+      letter-spacing: .3em;
+      color: rgba(240,237,228,.2);
+      margin-bottom: 1.25rem;
+    }
+    .c-cmt  { color: rgba(240,237,228,.28); }
+    .c-key  { color: #8aba5c; }
+    .c-str  { color: #7ec8a0; }
+    .c-num  { color: #b8c0d0; }
+    .c-fn   { color: rgba(240,237,228,.75); }
+
+    /* ── RESEARCH ───────────────────────────────────────────── */
+    #research { background: var(--cream); }
+    .research-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-l);
+      overflow: hidden;
+      margin-top: 2.75rem;
+    }
+    .r-card {
+      background: var(--cream);
+      padding: 2rem 1.85rem;
+      transition: background .18s;
+      position: relative;
+    }
+    .r-card:hover { background: var(--cream-2); }
+    .r-num {
+      font-family: var(--serif);
+      font-size: 2rem;
+      font-weight: 300;
+      color: rgba(20,20,19,.12);
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+    .r-title {
+      font-size: .97rem;
+      font-weight: 600;
+      letter-spacing: -.01em;
+      margin-bottom: .55rem;
+    }
+    .r-desc {
+      font-size: 13.5px;
+      color: var(--ink-2);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+    .r-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 1.25rem; }
+
+    /* ── PROJECTS ───────────────────────────────────────────── */
+    #projects {
+      background: var(--cream-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .proj-list { margin-top: .25rem; }
+    .proj-row {
+      display: grid;
+      grid-template-columns: 10px 1fr auto;
+      align-items: center; gap: 2rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: opacity .18s;
+      cursor: default;
+    }
+    .proj-row:first-child { border-top: 1px solid var(--border); }
+    .proj-row:hover { opacity: .72; }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #3d9e6a; flex-shrink: 0;
+    }
+    .dot.pause { background: #c8960a; }
+    .proj-name {
+      font-family: var(--serif);
+      font-weight: 400; font-size: 1.1rem;
+      letter-spacing: -.01em; margin-bottom: 3px;
+    }
+    .proj-desc {
+      font-size: 13px; color: var(--ink-3);
+      font-weight: 300;
+    }
+
+    /* ── TEAM ───────────────────────────────────────────────── */
+    #team { background: var(--cream); }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-l);
+      overflow: hidden;
+      margin-top: 2.75rem;
+    }
+    .m-card {
+      background: var(--cream);
+      padding: 1.75rem 1.5rem;
+      transition: background .18s;
+    }
+    .m-card:hover { background: var(--cream-2); }
+    .avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      margin-bottom: 1rem;
+      background: var(--ink);
+      display: grid; place-items: center;
+      color: var(--cream);
+      font-family: var(--serif);
+      font-size: .95rem; font-weight: 300;
+      font-style: italic;
+    }
+    .m-name { font-size: 14.5px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 3px; }
+    .m-role {
+      font-size: 11px; color: var(--ink-3);
+      letter-spacing: .1em; text-transform: uppercase;
+      font-weight: 500; margin-bottom: .55rem;
+    }
+    .m-focus { font-size: 12.5px; color: var(--ink-2); font-weight: 300; line-height: 1.5; }
+
+    .m-card.open {
+      background: transparent;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      min-height: 160px; cursor: pointer;
+    }
+    .m-card.open:hover { background: var(--cream-2); }
+    .open-plus {
+      font-family: var(--serif);
+      font-size: 2.5rem; font-weight: 300;
+      line-height: 1; color: var(--ink-3);
+      margin-bottom: .4rem;
+    }
+    .open-lbl { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .open-sub { font-size: 12px; color: var(--green); margin-top: 3px; }
+
+    /* ── NEWS ───────────────────────────────────────────────── */
+    #news {
+      background: var(--cream-2);
+      border-top: 1px solid var(--border);
+    }
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-l);
+      overflow: hidden;
+      margin-top: .25rem;
+    }
+    .n-card {
+      display: block;
+      background: var(--cream-2);
+      padding: 2rem 1.85rem;
+      text-decoration: none; color: var(--ink);
+      transition: background .18s;
+    }
+    .n-card:hover { background: var(--cream-3); }
+    .n-date {
+      font-size: 11px; color: var(--ink-3);
+      letter-spacing: .08em;
+      margin-bottom: .9rem;
+    }
+    .n-cat {
+      display: inline-block;
+      font-size: 10.5px; letter-spacing: .12em;
+      text-transform: uppercase; font-weight: 600;
+      color: var(--green);
+      margin-bottom: .6rem;
+    }
+    .n-title {
+      font-family: var(--serif);
+      font-size: 1.15rem; font-weight: 400;
+      letter-spacing: -.01em; line-height: 1.38;
+      margin-bottom: .6rem;
+    }
+    .n-excerpt {
+      font-size: 13px; color: var(--ink-2);
+      line-height: 1.68; font-weight: 300;
+    }
+    .n-arrow {
+      display: inline-block;
+      margin-top: 1.25rem;
+      font-size: 18px; color: var(--ink-3);
+      transition: transform .18s, color .18s;
+    }
+    .n-card:hover .n-arrow { transform: translateX(4px); color: var(--green); }
+
+    /* ── CTA STRIP ─────────────────────────────────────────── */
+    #cta-strip {
+      background: var(--ink);
+      padding: 80px 2.5rem;
+      text-align: center;
+    }
+    .cta-h {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      color: var(--cream);
+      letter-spacing: -.02em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .cta-h em { font-style: italic; color: var(--green-2); }
+    .cta-sub {
+      color: rgba(240,237,228,.55);
+      font-size: .95rem;
+      font-weight: 300;
+      margin-bottom: 2.5rem;
+    }
+    .btn-cream {
+      display: inline-block;
+      padding: 12px 28px;
+      background: var(--cream);
+      color: var(--ink);
+      border-radius: var(--r);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: opacity .18s;
+    }
+    .btn-cream:hover { opacity: .88; }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(240,237,228,.08);
+      padding: 2.5rem 2.5rem;
+    }
+    .footer-inner {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1.25rem;
+    }
+    .footer-brand {
+      font-family: var(--serif);
+      color: var(--cream); font-size: 1rem; font-weight: 300;
+      font-style: italic;
+    }
+    .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .footer-links a {
+      color: rgba(240,237,228,.4);
+      text-decoration: none; font-size: 13px;
+      transition: color .18s;
+    }
+    .footer-links a:hover { color: var(--cream); }
+    .footer-copy { font-size: 12px; color: rgba(240,237,228,.3); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .about-grid    { grid-template-columns: 1fr; gap: 2.5rem; }
+      .about-code    { position: static; }
+      .research-grid { grid-template-columns: 1fr 1fr; }
+      .team-grid     { grid-template-columns: 1fr 1fr; }
+      .news-grid     { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      .hero-stats { gap: 2rem; flex-wrap: wrap; }
+      .research-grid, .team-grid, .news-grid { grid-template-columns: 1fr; }
+      .proj-row { grid-template-columns: 10px 1fr; }
+      .proj-row .chip { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════ -->
+<nav id="navbar">
+  <a href="#" class="nav-brand">
+    <div class="nav-mark">λ</div>
+    <span class="nav-name">CCSD</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#news">News</a></li>
+    <li><a href="#contact" class="cta">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <div class="hero-label">Cryptography &amp; Distributed Systems</div>
+
+  <h1 class="hero-h">
+    Building <em>trust</em><br>
+    in open systems
+  </h1>
+
+  <p class="hero-sub">
+    We research cryptographic protocols, consensus mechanisms, and formal verification methods for secure, verifiable, and decentralized computation.
+  </p>
+
+  <div class="hero-btns">
+    <a href="#research" class="btn btn-fill">Explore our research</a>
+    <a href="#team"     class="btn btn-outline">Meet the team →</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num" data-target="12">0</span>
+      <span class="stat-lbl">Researchers</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="8">0</span>
+      <span class="stat-lbl">Active projects</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="34">0</span>
+      <span class="stat-lbl">Publications</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="5">0</span>
+      <span class="stat-lbl">Years</span>
+    </div>
   </div>
 </section>
 
-<!-- Posts recientes -->
-<section class="recent-posts">
-  <h2 class="section-title">Posts recientes</h2>
+<div class="divider"></div>
 
-  {% set blog_section = get_section(path="blog/_index.md") %}
-  {% set posts = blog_section.pages | slice(end=5) %}
+<!-- ══ ABOUT ══════════════════════════════════════════════════ -->
+<section id="about" class="section">
+  <div class="container">
+    <div class="about-grid">
 
-  {% if posts %}
-  <div class="post-list">
-    {% for post in posts %}
-    <article class="post-card">
-      <div class="post-card-meta">
-        <time datetime="{{ post.date | date(format='%Y-%m-%d') }}" class="post-date">
-          {{ post.date | date(format="%d %b %Y") }}
-        </time>
-        {% if config.extra.show_reading_time %}
-        <span class="reading-time">· {{ post.reading_time }} min de lectura</span>
-        {% endif %}
-        {% if post.taxonomies.tags %}
-        <div class="post-tags">
-          {% for tag in post.taxonomies.tags %}
-          <a href="{{ get_taxonomy_url(kind='tags', name=tag) }}" class="tag">{{ tag }}</a>
-          {% endfor %}
-        </div>
-        {% endif %}
+      <div class="about-text">
+        <div class="eyebrow">About</div>
+        <h2 class="display">Theory meets<br><em>real-world engineering</em></h2>
+        <p>
+          The Cryptography &amp; Distributed Systems Laboratory (CCSD) is an independent research center dedicated to advancing the mathematical and engineering foundations of secure, decentralized computation.
+        </p>
+        <p>
+          We bridge rigorous cryptographic theory with practical systems engineering — building open protocols, verifiable proofs, and tools that matter. Our work is public, reproducible, and grounded in formal correctness.
+        </p>
+        <p>
+          We collaborate with universities, open-source communities, and industry partners to ensure our research has lasting impact.
+        </p>
+        <a href="#research" class="btn btn-fill" style="margin-top:.5rem;">Our research areas →</a>
       </div>
-      <h3 class="post-card-title">
-        <a href="{{ post.permalink }}">{{ post.title }}</a>
-      </h3>
-      {% if post.description %}
-      <p class="post-card-excerpt">{{ post.description }}</p>
-      {% elif post.summary %}
-      <p class="post-card-excerpt">{{ post.summary | truncate(length=200) }}</p>
-      {% endif %}
-      <a href="{{ post.permalink }}" class="read-more">Leer más &rarr;</a>
-    </article>
-    {% endfor %}
-  </div>
 
-  <div class="view-all">
-    <a href="{{ get_url(path='blog') }}" class="btn-secondary">Ver todos los posts</a>
+      <div class="about-code">
+<span class="c-cmt">// Pedersen commitment</span>
+<span class="c-key">fn</span> <span class="c-fn">commit</span>(x: Field, r: Scalar) → G {
+  <span class="c-key">return</span> G·<span class="c-num">x</span> + H·<span class="c-num">r</span>
+}
+
+<span class="c-cmt">// Groth16 verifier check</span>
+<span class="c-key">fn</span> <span class="c-fn">verify</span>(π, x_pub) → bool {
+  e(A, B)
+    == e(α, β)
+     · e(<span class="c-fn">L</span>(x_pub), γ)
+     · e(C, δ)
+}
+
+<span class="c-cmt">// BFT safety invariant</span>
+<span class="c-key">assert</span> ∀ honest A, B ∈ Π:
+  <span class="c-fn">decided</span>(A, v) ∧ <span class="c-fn">decided</span>(B, w)
+    → v = w
+      </div>
+
+    </div>
   </div>
-  {% else %}
-  <p class="empty-state">Todavía no hay posts publicados. ¡Pronto habrá contenido!</p>
-  {% endif %}
 </section>
-{% endblock %}
+
+<div class="divider"></div>
+
+<!-- ══ RESEARCH ══════════════════════════════════════════════ -->
+<section id="research" class="section">
+  <div class="container">
+    <div class="eyebrow accent">Research areas</div>
+    <h2 class="display">What we work on</h2>
+    <p class="body-text" style="max-width:500px;">From zero-knowledge proofs to consensus protocols — our work spans the full stack of trustworthy distributed computation.</p>
+
+    <div class="research-grid">
+
+      <div class="r-card">
+        <div class="r-num">01</div>
+        <div class="r-title">Zero-Knowledge Proofs</div>
+        <div class="r-desc">Designing and optimizing zkSNARK and zkSTARK systems for efficient proof generation and verification in constrained environments.</div>
+        <div class="r-tags">
+          <span class="chip">STARKs</span>
+          <span class="chip">Plonk</span>
+          <span class="chip">FRI</span>
+        </div>
+      </div>
+
+      <div class="r-card">
+        <div class="r-num">02</div>
+        <div class="r-title">Consensus Protocols</div>
+        <div class="r-desc">Byzantine fault-tolerant consensus mechanisms with provable safety and liveness guarantees for large-scale distributed networks.</div>
+        <div class="r-tags">
+          <span class="chip">BFT</span>
+          <span class="chip">PoS</span>
+          <span class="chip">DAGs</span>
+        </div>
+      </div>
+
+      <div class="r-card">
+        <div class="r-num">03</div>
+        <div class="r-title">Formal Verification</div>
+        <div class="r-desc">Machine-verified proofs of correctness for cryptographic protocols and smart contracts using interactive theorem provers.</div>
+        <div class="r-tags">
+          <span class="chip">Lean 4</span>
+          <span class="chip">Coq</span>
+          <span class="chip">TLA+</span>
+        </div>
+      </div>
+
+      <div class="r-card">
+        <div class="r-num">04</div>
+        <div class="r-title">Privacy-Preserving Computation</div>
+        <div class="r-desc">Multi-party computation, homomorphic encryption, and secure aggregation for private analytics and inference.</div>
+        <div class="r-tags">
+          <span class="chip">MPC</span>
+          <span class="chip">FHE</span>
+          <span class="chip">SMPC</span>
+        </div>
+      </div>
+
+      <div class="r-card">
+        <div class="r-num">05</div>
+        <div class="r-title">Blockchain Scalability</div>
+        <div class="r-desc">Layer-2 architectures, rollup designs, and sharding schemes that preserve decentralization and cryptographic security.</div>
+        <div class="r-tags">
+          <span class="chip">Rollups</span>
+          <span class="chip">Sharding</span>
+          <span class="chip">Bridges</span>
+        </div>
+      </div>
+
+      <div class="r-card">
+        <div class="r-num">06</div>
+        <div class="r-title">Cryptographic Primitives</div>
+        <div class="r-desc">New hash functions, elliptic curve constructions, and algebraic structures designed for zero-knowledge and recursive proof systems.</div>
+        <div class="r-tags">
+          <span class="chip">Poseidon</span>
+          <span class="chip">KZG</span>
+          <span class="chip">Curves</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ PROJECTS ══════════════════════════════════════════════ -->
+<section id="projects" class="section">
+  <div class="container">
+    <div class="row-head">
+      <div>
+        <div class="eyebrow accent">Open projects</div>
+        <h2 class="display" style="margin-bottom:0;">Active work</h2>
+      </div>
+      <a href="#" class="see-all">View all →</a>
+    </div>
+
+    <div class="proj-list">
+      <div class="proj-row">
+        <div class="dot"></div>
+        <div>
+          <div class="proj-name">Lambdaworks</div>
+          <div class="proj-desc">Rust cryptographic primitives library with support for STARKs, SNARKs, and FFT-based polynomial arithmetic over finite fields.</div>
+        </div>
+        <span class="chip green">open-source</span>
+      </div>
+      <div class="proj-row">
+        <div class="dot"></div>
+        <div>
+          <div class="proj-name">Cairo Proof Verifier</div>
+          <div class="proj-desc">On-chain verifier for Cairo execution proofs, enabling trustless verification of arbitrary computation on Ethereum L1.</div>
+        </div>
+        <span class="chip">research</span>
+      </div>
+      <div class="proj-row">
+        <div class="dot"></div>
+        <div>
+          <div class="proj-name">BFT Consensus Simulator</div>
+          <div class="proj-desc">Formal model and simulation framework for analyzing Byzantine fault-tolerant protocols under adversarial network conditions.</div>
+        </div>
+        <span class="chip">tools</span>
+      </div>
+      <div class="proj-row">
+        <div class="dot pause"></div>
+        <div>
+          <div class="proj-name">zkVoting Protocol</div>
+          <div class="proj-desc">Privacy-preserving e-voting using zkSNARKs that guarantees ballot secrecy and public verifiability simultaneously.</div>
+        </div>
+        <span class="chip">research</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ TEAM ══════════════════════════════════════════════════ -->
+<section id="team" class="section">
+  <div class="container">
+    <div class="eyebrow accent">Researchers</div>
+    <h2 class="display">The team</h2>
+    <p class="body-text" style="max-width:480px; margin-bottom:0;">A focused group of researchers and engineers at the cutting edge of cryptography and distributed systems.</p>
+
+    <div class="team-grid">
+      <div class="m-card">
+        <div class="avatar">AR</div>
+        <div class="m-name">Agustín R.</div>
+        <div class="m-role">Director</div>
+        <div class="m-focus">Zero-knowledge proofs &amp; proof systems</div>
+      </div>
+      <div class="m-card">
+        <div class="avatar">ML</div>
+        <div class="m-name">Martina L.</div>
+        <div class="m-role">Lead Researcher</div>
+        <div class="m-focus">Consensus protocols &amp; BFT</div>
+      </div>
+      <div class="m-card">
+        <div class="avatar">DP</div>
+        <div class="m-name">Diego P.</div>
+        <div class="m-role">Researcher</div>
+        <div class="m-focus">Cryptographic primitives &amp; algebra</div>
+      </div>
+      <div class="m-card">
+        <div class="avatar">SF</div>
+        <div class="m-name">Sofía F.</div>
+        <div class="m-role">Researcher</div>
+        <div class="m-focus">Formal verification &amp; Lean 4</div>
+      </div>
+      <div class="m-card">
+        <div class="avatar">JM</div>
+        <div class="m-name">Javier M.</div>
+        <div class="m-role">Engineer</div>
+        <div class="m-focus">Rust / systems &amp; implementation</div>
+      </div>
+      <div class="m-card">
+        <div class="avatar">IC</div>
+        <div class="m-name">Iara C.</div>
+        <div class="m-role">PhD Student</div>
+        <div class="m-focus">Privacy-preserving computation</div>
+      </div>
+      <div class="m-card">
+        <div class="avatar">LB</div>
+        <div class="m-name">Lucas B.</div>
+        <div class="m-role">PhD Student</div>
+        <div class="m-focus">Blockchain scalability &amp; rollups</div>
+      </div>
+      <div class="m-card open" onclick="location.href='#contact'">
+        <div class="open-plus">+</div>
+        <div class="open-lbl">We're hiring</div>
+        <div class="open-sub">Open positions →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ NEWS ══════════════════════════════════════════════════ -->
+<section id="news" class="section">
+  <div class="container">
+    <div class="row-head">
+      <div>
+        <div class="eyebrow accent">Updates</div>
+        <h2 class="display" style="margin-bottom:0;">Latest news</h2>
+      </div>
+      <a href="#" class="see-all">All posts →</a>
+    </div>
+
+    <div class="news-grid">
+      <a href="#" class="n-card">
+        <div class="n-cat">Paper</div>
+        <div class="n-title">Recursive STARKs with sub-linear verification time</div>
+        <div class="n-date">March 10, 2026</div>
+        <div class="n-excerpt">We present a new recursive composition scheme achieving O(log n) verification time without sacrificing soundness.</div>
+        <div class="n-arrow">→</div>
+      </a>
+      <a href="#" class="n-card">
+        <div class="n-cat">Release</div>
+        <div class="n-title">Lambdaworks v0.8 released with Groth16 support</div>
+        <div class="n-date">February 20, 2026</div>
+        <div class="n-excerpt">The latest release adds full Groth16 prover and verifier, along with optimized MSM routines for BN254 and BLS12-381.</div>
+        <div class="n-arrow">→</div>
+      </a>
+      <a href="#" class="n-card">
+        <div class="n-cat">Talk</div>
+        <div class="n-title">Formally verifying zkVM circuits — ZK Summit Barcelona</div>
+        <div class="n-date">January 15, 2026</div>
+        <div class="n-excerpt">Sofía presented our work on formally verifying zkVM constraint systems using Lean 4 at ZK Summit Barcelona.</div>
+        <div class="n-arrow">→</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA STRIP ══════════════════════════════════════════════ -->
+<section id="cta-strip">
+  <div class="container" style="max-width:680px;">
+    <h2 class="cta-h">Work with us on the <em>future of trust</em></h2>
+    <p class="cta-sub">Open positions, research collaborations, and industry partnerships.</p>
+    <a href="mailto:research@cdsl.org" class="btn-cream">Get in touch</a>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div class="footer-brand">CCSD — Cryptography &amp; Distributed Systems Laboratory</div>
+    <div class="footer-links">
+      <a href="#research">Research</a>
+      <a href="#projects">Projects</a>
+      <a href="#team">Team</a>
+      <a href="#">GitHub</a>
+      <a href="#">Papers</a>
+      <a href="mailto:research@cdsl.org">research@cdsl.org</a>
+    </div>
+    <div class="footer-copy">© 2026 CCSD</div>
+  </div>
+</footer>
+
+<!-- ══ SCRIPTS ════════════════════════════════════════════════ -->
+<script>
+/* Navbar scroll shadow */
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', scrollY > 20);
+});
+
+/* Warm-toned network canvas */
+(function () {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx    = canvas.getContext('2d');
+  let nodes    = [];
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+
+  function init() {
+    nodes = [];
+    const count = Math.floor((canvas.width * canvas.height) / 16000);
+    for (let i = 0; i < count; i++) {
+      nodes.push({
+        x:  Math.random() * canvas.width,
+        y:  Math.random() * canvas.height,
+        vx: (Math.random() - .5) * .38,
+        vy: (Math.random() - .5) * .38,
+        r:  Math.random() * 1.8 + 1,
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const n of nodes) {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+    }
+
+    const maxDist = 145;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx   = nodes[i].x - nodes[j].x;
+        const dy   = nodes[i].y - nodes[j].y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < maxDist) {
+          const a = (1 - dist / maxDist) * .45;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(74,104,39,${a})`;
+          ctx.lineWidth = .8;
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    for (const n of nodes) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(74,104,39,.55)';
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); init(); });
+  resize(); init(); draw();
+})();
+
+/* Counters */
+(function () {
+  let fired = false;
+  const obs = new IntersectionObserver(entries => {
+    if (fired || !entries[0].isIntersecting) return;
+    fired = true;
+    document.querySelectorAll('[data-target]').forEach(el => {
+      const target = +el.dataset.target;
+      let val = 0;
+      const step = target / 44;
+      const iv = setInterval(() => {
+        val = Math.min(val + step, target);
+        el.textContent = Math.floor(val);
+        if (val >= target) {
+          el.textContent = target + (target > 5 ? '+' : '');
+          clearInterval(iv);
+        }
+      }, 26);
+    });
+  }, { threshold: .2 });
+  obs.observe(document.getElementById('hero'));
+})();
+</script>
+
+</body>
+</html>
